@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h1>Welcome to Mini Banking System</h1>
+  <p>A small banking application that covers the basic services of a bank: accounts, transactions, fixed deposits and loans.</p>
+  {% if g.account %}
+    <a class="btn" href="{{ url_for('dashboard') }}">Go to Dashboard</a>
+  {% else %}
+    <a class="btn" href="{{ url_for('register') }}">Open an Account</a>
+    <a class="btn secondary" href="{{ url_for('login') }}">Login</a>
+  {% endif %}
+</div>
+<div class="grid">
+  <div class="card"><h2>Accounts &amp; KYC</h2><p class="muted">Savings and Current accounts with KYC details, minimum balance rule and a hashed 4-digit PIN.</p></div>
+  <div class="card"><h2>Transactions</h2><p class="muted">Deposit, withdraw, transfer to another account and view your statement.</p></div>
+  <div class="card"><h2>Fixed Deposits</h2><p class="muted">Open an FD with quarterly compounding, see the maturity amount and redeem it.</p></div>
+  <div class="card"><h2>Loans &amp; EMI</h2><p class="muted">EMI calculator, eligibility check (income based) and EMI payments.</p></div>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="card">
+  <span class="badge">{{ g.account.account_type.title() }} account</span>
+  <h1 style="margin-top:6px">Hello, {{ g.account.customer_name }}</h1>
+  <div class="muted">Account no: <b>{{ g.account.account_no }}</b></div>
+  <div class="balance">{{ g.account.balance|inr }}</div>
+  <div class="muted">{{ fd_count }} fixed deposit(s) &middot; {{ loan_count }} loan(s)</div>
+</div>
+
+<div class="grid">
+  <div class="card"><h2>Deposit</h2>
+    <form method="post" action="{{ url_for('deposit') }}">
+      <label>Amount (₹)</label><input name="amount" type="number" step="0.01" min="1" required>
+      <button type="submit">Deposit</button></form></div>
+  <div class="card"><h2>Withdraw</h2>
+    <form method="post" action="{{ url_for('withdraw') }}">
+      <label>Amount (₹)</label><input name="amount" type="number" step="0.01" min="1" required>
+      <button type="submit">Withdraw</button></form></div>
+  <div class="card"><h2>Transfer</h2>
+    <form method="post" action="{{ url_for('transfer') }}">
+      <label>To account number</label><input name="to_account" inputmode="numeric" required>
+      <label>Amount (₹)</label><input name="amount" type="number" step="0.01" min="1" required>
+      <button type="submit">Transfer</button></form></div>
+</div>
+
+<div class="card">
+  <h2>Recent transactions</h2>
+  {% if transactions %}
+  <div class="table-scroll"><table>
+    <tr><th>Date</th><th>Description</th><th class="num">Amount</th><th class="num">Balance</th></tr>
+    {% for t in transactions %}
+    {% set credit = t.txn_type in ['DEPOSIT', 'TRANSFER_IN', 'FD_REDEEM', 'LOAN_DISBURSAL'] %}
+    <tr><td>{{ t.created_at }}</td><td>{{ t.description }}</td>
+        <td class="num {{ 'credit' if credit else 'debit' }}">{{ '+' if credit else '-' }}{{ t.amount|inr }}</td>
+        <td class="num">{{ t.balance_after|inr }}</td></tr>
+    {% endfor %}
+  </table></div>
+  <a href="{{ url_for('statement') }}">View full statement &rarr;</a>
+  {% else %}<p class="muted">No transactions yet.</p>{% endif %}
+</div>
+{% endblock %}

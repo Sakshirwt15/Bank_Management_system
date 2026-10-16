@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Mini Banking System{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header>
+  <div class="nav wrap">
+    <a class="brand" href="{{ url_for('home') }}">🏦 Mini Banking System</a>
+    <nav>
+      {% if g.account %}
+        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('statement') }}">Statement</a>
+        <a href="{{ url_for('fixed_deposit') }}">Fixed Deposit</a>
+        <a href="{{ url_for('loan') }}">Loans</a>
+        <a href="{{ url_for('calculators') }}">Calculators</a>
+        <a href="{{ url_for('logout') }}">Logout</a>
+      {% else %}
+        <a href="{{ url_for('calculators') }}">Calculators</a>
+        <a href="{{ url_for('login') }}">Login</a>
+        <a href="{{ url_for('register') }}">Open Account</a>
+      {% endif %}
+    </nav>
+  </div>
+</header>
+<main class="wrap">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</main>
+<footer>Educational project built with Python, Flask and SQL. Not a real bank - do not enter real personal data.</footer>
+</body>
+</html>

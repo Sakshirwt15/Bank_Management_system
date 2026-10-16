@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Calculators{% endblock %}
+{% block content %}
+<h1>Calculators</h1>
+<div class="grid">
+  <div class="card">
+    <h2>EMI Calculator</h2>
+    <form method="post">
+      <input type="hidden" name="calc" value="emi">
+      <label>Loan amount (₹)</label><input name="amount" type="number" step="0.01" min="1" value="{{ form.get('amount', '') if form.get('calc') == 'emi' }}" required>
+      <label>Interest rate (% p.a.)</label><input name="rate" type="number" step="0.01" min="0" value="{{ form.get('rate', '') if form.get('calc') == 'emi' }}" required>
+      <label>Tenure (months)</label><input name="months" type="number" min="1" max="360" value="{{ form.get('months', '') if form.get('calc') == 'emi' }}" required>
+      <button type="submit">Calculate EMI</button>
+    </form>
+    {% if emi %}<div class="result">Monthly EMI: <b>{{ emi.emi|inr }}</b><br>Total interest: <b>{{ emi.total_interest|inr }}</b><br>Total payable: <b>{{ emi.total_payable|inr }}</b></div>{% endif %}
+  </div>
+  <div class="card">
+    <h2>FD Maturity Calculator</h2>
+    <form method="post">
+      <input type="hidden" name="calc" value="fd">
+      <label>Deposit amount (₹)</label><input name="amount" type="number" step="0.01" min="1" value="{{ form.get('amount', '') if form.get('calc') == 'fd' }}" required>
+      <label>Interest rate (% p.a.)</label><input name="rate" type="number" step="0.01" min="0" value="{{ form.get('rate', '') if form.get('calc') == 'fd' }}" required>
+      <label>Tenure (months)</label><input name="months" type="number" min="1" max="360" value="{{ form.get('months', '') if form.get('calc') == 'fd' }}" required>
+      <button type="submit">Calculate maturity</button>
+    </form>
+    {% if fd %}<div class="result">Interest earned: <b>{{ fd.interest|inr }}</b><br>Maturity amount: <b>{{ fd.maturity|inr }}</b><br><span class="muted">Quarterly compounding</span></div>{% endif %}
+  </div>
+</div>
+{% endblock %}

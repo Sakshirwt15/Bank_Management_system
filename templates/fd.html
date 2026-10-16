@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Fixed Deposit{% endblock %}
+{% block content %}
+<div class="grid">
+  <div class="card">
+    <h1>Fixed Deposit</h1>
+    <p class="muted">Minimum {{ min_amount|inr }}. The amount is taken from your account balance. Interest is compounded quarterly.</p>
+    <form method="post">
+      <label>FD amount (₹)</label><input name="amount" type="number" step="0.01" min="1" value="{{ form.get('amount', '') }}" required>
+      <label>Tenure (months, 6 to 120)</label><input name="months" type="number" min="6" max="120" value="{{ form.get('months', '') }}" required>
+      <button type="submit" name="action" value="calculate" class="secondary">Calculate maturity</button>
+      <button type="submit" name="action" value="open">Open FD</button>
+    </form>
+    {% if preview %}
+    <div class="result">
+      Rate: <b>{{ preview.rate }}% p.a.</b><br>
+      Interest earned: <b>{{ preview.interest|inr }}</b><br>
+      Maturity amount: <b>{{ preview.maturity|inr }}</b>
+    </div>
+    {% endif %}
+  </div>
+  <div class="card">
+    <h2>Interest rate slabs (illustrative)</h2>
+    <table><tr><th>Tenure</th><th class="num">Rate p.a.</th></tr>
+      {% for months, rate in slabs %}<tr><td>Up to {{ months }} months</td><td class="num">{{ rate }}%</td></tr>{% endfor %}
+    </table>
+    <p class="muted">Breaking an FD before maturity: principal returned with {{ penalty }}% penalty and no interest.</p>
+  </div>
+</div>
+
+<div class="card">
+  <h2>My fixed deposits</h2>
+  {% if fds %}
+  <div class="table-scroll"><table>
+    <tr><th>#</th><th class="num">Principal</th><th class="num">Rate</th><th>Opened</th><th>Matures</th><th class="num">Maturity amount</th><th>Status</th><th></th></tr>
+    {% for fd in fds %}
+    <tr><td>{{ fd.id }}</td><td class="num">{{ fd.principal|inr }}</td><td class="num">{{ fd.interest_rate }}%</td>
+        <td>{{ fd.start_date }}</td><td>{{ fd.maturity_date }}</td><td class="num">{{ fd.maturity_amount|inr }}</td>
+        <td>{{ fd.status.title() }}</td>
+        <td>{% if fd.status == 'ACTIVE' %}
+          <form method="post" action="{{ url_for('redeem_fd', fd_id=fd.id) }}">
+            <button class="small" type="submit">{{ 'Redeem' if fd.matured else 'Break FD' }}</button></form>
+        {% endif %}</td></tr>
+    {% endfor %}
+  </table></div>
+  {% else %}<p class="muted">You have no fixed deposits yet.</p>{% endif %}
+</div>
+{% endblock %}

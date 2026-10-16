@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Statement{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Account Statement</h1>
+  <div class="muted">Account {{ g.account.account_no }} &middot; last {{ transactions|length }} transactions (times in UTC)</div>
+  <div class="table-scroll"><table>
+    <tr><th>Date</th><th>Type</th><th>Description</th><th class="num">Amount</th><th class="num">Balance</th></tr>
+    {% for t in transactions %}
+    {% set credit = t.txn_type in credit_types %}
+    <tr><td>{{ t.created_at }}</td><td>{{ t.txn_type.replace('_', ' ').title() }}</td><td>{{ t.description }}</td>
+        <td class="num {{ 'credit' if credit else 'debit' }}">{{ '+' if credit else '-' }}{{ t.amount|inr }}</td>
+        <td class="num">{{ t.balance_after|inr }}</td></tr>
+    {% endfor %}
+  </table></div>
+</div>
+{% endblock %}
