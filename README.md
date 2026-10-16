@@ -1,82 +1,86 @@
-# Mini Banking System
+# Bank Management System
 
-A small banking web application built with **Python (Flask)** and **SQL (SQLite)**.
-It covers the basic services of a bank: accounts with KYC, transactions, fixed deposits, loans, and EMI / FD calculators.
+A web-based banking application that I built using **Python (Flask)** and **SQL (SQLite)**.
 
-## Features
-| Module | What it does |
-|---|---|
-| Accounts & KYC | Savings / Current account, KYC details, minimum balance rule, 4-digit PIN stored as a **hash** |
-| Transactions | Deposit, withdraw, transfer to another account, statement with running balance |
-| Fixed Deposit | Open FD (quarterly compounding), maturity calculator, redeem / break FD with 1% penalty |
-| Loans | Home / Car / Personal loan, EMI, eligibility check (EMIs <= 50% of income), pay EMI |
-| Calculators | Public EMI and FD maturity calculators (no login needed) |
+I made this project to understand how the basic services of a bank work behind the scenes, such as opening an account, depositing and withdrawing money, fixed deposits and loans.
 
-## Tech stack
-Python 3, Flask, SQLite (SQL), Jinja2 templates, HTML/CSS, gunicorn (deployment), pytest (tests).
+## What this project can do
+
+- **Open an account:** Savings or Current account with KYC details. A minimum balance has to be maintained. The 4-digit PIN is stored in hashed form, not as plain text.
+- **Transactions:** Deposit, withdraw and transfer money to another account. Every transaction is saved and shown in the account statement.
+- **Fixed Deposit (FD):** Open an FD for a chosen period, see the maturity amount (interest is compounded quarterly), and redeem it. If the FD is broken early, a 1% penalty is charged and no interest is paid.
+- **Loans:** Apply for a Home, Car or Personal loan. The app calculates the EMI and checks eligibility. If the customer is not eligible, it shows the maximum loan amount they can get. EMIs can be paid from the account.
+- **Calculators:** EMI calculator and FD maturity calculator. These work without login.
+
+## Technologies used
+
+- Python and Flask (backend)
+- SQL with SQLite (database)
+- HTML, CSS and Jinja2 templates (frontend)
+- pytest (unit tests) and gunicorn (deployment)
 
 ## Project structure
+
 ```
-mini_banking_system/
-├── app.py              # Flask routes (web layer)
-├── banking.py          # all banking rules + formulas (business logic)
-├── db.py               # database connection helpers
-├── schema.sql          # SQL tables (customers, accounts, transactions, fixed_deposits, loans)
-├── templates/          # HTML pages (Jinja2)
-├── static/style.css    # styling
-├── tests/              # 15 unit tests
-├── requirements.txt    # Flask, gunicorn
-├── Procfile            # start command for hosting
-└── render.yaml         # one-click config for Render
+Bank_Management_system/
+├── app.py            # web routes (pages and forms)
+├── banking.py        # banking rules and formulas
+├── db.py             # database connection
+├── schema.sql        # SQL tables
+├── templates/        # HTML pages
+├── static/           # CSS
+├── tests/            # unit tests
+├── requirements.txt  # libraries needed
+├── Procfile          # start command for hosting
+└── render.yaml       # settings for deployment on Render
 ```
 
-## Run on your computer
-```bash
+The database has 5 tables: `customers`, `accounts`, `transactions`, `fixed_deposits` and `loans`.
+
+## How to run it on your computer
+
+1. Install Python 3 and download this project.
+2. Open a terminal inside the project folder and run:
+
+```
 python -m venv venv
-venv\Scripts\activate          # Windows      (Mac/Linux: source venv/bin/activate)
+venv\Scripts\activate
 pip install -r requirements.txt
 python app.py
 ```
-Open http://127.0.0.1:5000 , open an account, and log in with the account number shown after registration.
 
-Run the tests: `pip install -r requirements-dev.txt` then `pytest`.
+On Mac or Linux, use `source venv/bin/activate` instead of `venv\Scripts\activate`.
 
-## Deploy (free)
-**Option A - Render (easiest)**
-1. Create a GitHub repository and push this folder (`git init`, `git add .`, `git commit -m "first commit"`, then push).
-2. On render.com: New > Web Service > connect your repo. Render reads `render.yaml`
-   (or set Build command `pip install -r requirements.txt`, Start command `gunicorn app:app`).
-3. Wait for the build; your live link is `https://<name>.onrender.com`.
-> Note: on Render's free plan the SQLite file is reset when the service redeploys or restarts, so demo data can disappear.
-> For permanent data use PythonAnywhere (below) or switch to PostgreSQL.
+3. Open `http://127.0.0.1:5000` in the browser.
+4. Click **Open Account**. After the account is created, you will get an account number. Use it with your PIN to log in.
+5. After logging in, the **Fixed Deposit** and **Loans** pages are available in the top menu.
 
-**Option B - PythonAnywhere (SQLite data stays)**
-1. Create a free account, upload the folder (or `git clone` it in a Bash console).
-2. Web tab > Add a new web app > Flask > point the WSGI file to `app` from `app.py`.
-3. In a Bash console: `pip install --user flask`, then reload the web app.
+To run the tests: `pip install -r requirements-dev.txt` and then `pytest`.
 
-Set an environment variable `SECRET_KEY` to a long random string in production (Render does this automatically).
+## How the main calculations work
 
-## How the important parts work
-* **EMI** = P x r x (1+r)^n / ((1+r)^n - 1) where r = annual rate / 12 / 100 and n = months.
-* **FD maturity** = P x (1 + rate/400)^(4t) (quarterly compounding, t in years).
-* **Eligibility (FOIR)**: new EMI + existing EMIs must be <= 50% of monthly income. Max loan = EMI x ((1+r)^n - 1) / (r x (1+r)^n).
-* **Minimum balance** is checked inside the SQL `UPDATE` itself, so two simultaneous requests cannot overdraw the account.
-* Each action runs in **one database transaction**: if anything fails, everything is rolled back (important for transfers).
-* Interest rates and rules are illustrative values, not ICICI Bank's real rates.
+- **EMI** = P × r × (1 + r)^n / ((1 + r)^n − 1), where P is the loan amount, r is the monthly interest rate (annual rate / 12 / 100) and n is the number of months.
+- **FD maturity amount** = P × (1 + rate / 400)^(4 × years), because interest is compounded 4 times a year.
+- **Loan eligibility:** the total of all EMIs should not be more than 50% of the monthly income.
 
-## Limitations / future improvements (good to mention honestly)
-* No CSRF protection or PIN lockout after wrong attempts; a real bank would also use OTP / 2-factor.
-* Money stored as decimal numbers rounded to 2 places; production systems store paise as integers.
-* SQLite is great for a demo; PostgreSQL would be used for many users.
-* Ideas: monthly interest on savings, admin panel, downloadable PDF statement, suspicious-transaction rules.
+## Things I handled while building it
 
-## Interview questions you should be ready for
-1. **Why this project?** I wanted to understand how basic banking services work behind the scenes: accounts, transactions, deposits and loans.
-2. **Where is data stored?** In an SQL database with 5 tables linked by foreign keys (customers, accounts, transactions, fixed_deposits, loans).
-3. **How is the PIN protected?** It is hashed (never stored as plain text) using Werkzeug's `generate_password_hash`.
-4. **What happens if a transfer fails halfway?** All steps run in one transaction, so the whole thing is rolled back - no money is lost or created.
-5. **How is EMI calculated?** Using the EMI formula above; the same project also shows total interest and total payable.
-6. **How do you decide loan eligibility?** EMIs must stay within 50% of income (FOIR). If not eligible, the app tells the maximum loan amount the person can get.
-7. **What is the difference between FD and savings account?** Savings: money available any time, low interest. FD: money locked for a period, higher interest; breaking early costs a penalty.
-8. **What would you improve?** OTP login, PIN lockout, PostgreSQL, interest on savings, admin panel.
+- If any step of a transaction fails, everything is rolled back. For example, in a transfer, money is not deducted from one account unless it is added to the other.
+- The minimum balance is checked inside the SQL update itself, so the balance cannot go below the limit.
+- Wrong inputs (negative amounts, invalid phone number, wrong PIN, unknown account) show a clear message to the user.
+- I wrote 15 unit tests for the formulas, minimum balance, transfers, FD and loan rules.
+
+## Limitations and what I want to add next
+
+- Interest rates and rules in this project are only examples. They are not the real rates of any bank.
+- There is no OTP login, PIN lock after wrong attempts or CSRF protection yet.
+- SQLite is fine for a demo project. For many users, a database like PostgreSQL would be better.
+- Next, I want to add interest on savings accounts, an admin panel and a downloadable statement.
+
+## About me
+
+**Sakshi Rawat**
+B.Tech in Computer Science and Engineering, Graphic Era Hill University, Dehradun
+GitHub: [github.com/sakshirwt15](https://github.com/sakshirwt15)
+
+> This is an educational project. Please do not enter real personal or banking details in it.
